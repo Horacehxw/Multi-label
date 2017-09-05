@@ -3,6 +3,8 @@
 
 the data is availble here: **[The Extreme Classification Repository: Multi-label Datasets & Code](http://manikvarma.org/downloads/XC/XMLRepository.html)**
 
+Just download one and put it in a /data directory
+
 ## 1. ECOC(multi-class setting)
 #### step 1: map the class to the coresponding **binary** vector $[1,0,...,1]^T$ using the error correction codes.:
 - Exhaustive code
