@@ -1,4 +1,6 @@
-
+from sklearn.preprocessing import MultiLabelBinarizer # convert y to {0,1}^L
+from sklearn.feature_extraction import DictVectorizer # extract feature vector to x
+import numpy as np
 
 class DataPoint():
     def __init__(self):
@@ -74,3 +76,23 @@ def read_file(filename):
         for line in file:
             data.append(read_a_point(line, counter=feature_counter))
     return data, num_point, num_features, num_labels
+
+def data_transform(tr, te, num_label):
+    '''
+    return: X_tr, Y_tr, X_te, Y_te
+    '''
+    # transform train and test data into sparse matrix
+    lb = MultiLabelBinarizer(classes=range(num_label))
+    Y_tr_raw = np.array([np.array(data_point.labels) for data_point in tr])
+    Y_te_raw = np.array([np.array(data_point.labels) for data_point in te])
+    lb.fit(Y_tr_raw)
+    Y_tr = lb.transform(Y_tr_raw)
+    Y_te = lb.transform(Y_te_raw)
+
+    fv = DictVectorizer(sparse=False)
+    X_tr_raw = [data_point.features for data_point in tr]
+    X_te_raw = [data_point.features for data_point in te]
+    fv.fit(X_tr_raw)
+    X_tr = fv.transform(X_tr_raw)
+    X_te = fv.transform(X_te_raw)
+    return X_tr, Y_tr, X_te, Y_te
