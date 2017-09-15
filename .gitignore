@@ -1,5 +1,5 @@
 data/**
 *.pyc
-.model/**
 src/.ipynb_checkpoints/**
-
+.model/**
+.model*/**

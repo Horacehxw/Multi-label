@@ -25,7 +25,7 @@ class DataPoint():
         string += "\n"
         return string
 
-def read_a_point(line, counter = None, prominent = None):
+def _read_a_point(line, counter = None, prominent = None):
     def read_feature(__tokens): # data closure
         for token in __tokens:
             #print(token)
@@ -74,7 +74,7 @@ def read_file(filename):
         d_points = []
         feature_counter = {}
         for line in file:
-            data.append(read_a_point(line, counter=feature_counter))
+            data.append(_read_a_point(line, counter=feature_counter))
     return data, num_point, num_features, num_labels
 
 def data_transform(tr, te, num_label):
@@ -96,3 +96,20 @@ def data_transform(tr, te, num_label):
     X_tr = fv.transform(X_tr_raw)
     X_te = fv.transform(X_te_raw)
     return X_tr, Y_tr, X_te, Y_te
+
+def split_data(data, split_file, index=0):
+    '''
+    input: 
+        data: list of DataPoint
+        split_file: split file path, each column indicate a split
+        index: which split column to choose, default 0
+    return:
+        the split result, list of DataPoint
+    '''
+    result = []
+    with open(split_file, "r") as file:
+        for line in file:
+            #result.extend([data[int(x)-1] for x in line.split()])
+            # each column in the split file is a split
+            result.append(data[int(line.split()[index]) - 1])
+    return result
