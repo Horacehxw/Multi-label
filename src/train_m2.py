@@ -1,12 +1,12 @@
-%matplotlib inline
+
 import math
 import os
 import data_util
 #from data_util import DataPoint
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+#import seaborn as sns
 
 from sklearn.preprocessing import MultiLabelBinarizer # convert y to {0,1}^L
 from sklearn.preprocessing import StandardScaler # normalize features 
@@ -21,13 +21,15 @@ from sklearn.feature_selection import VarianceThreshold
 from sklearn.metrics import average_precision_score
 from joblib import Parallel, delayed # Multitread
 
-# setting path
+#setting path
 data_dir = "../data"
 model_dir = "../.model2"
-train_filename = "/Eurlex/eurlex_train.txt"
-test_filename = "/Eurlex/eurlex_test.txt"
-#tr_split_file = "/Delicious/delicious_trSplit.txt"
-#te_split_file = "/Delicious/delicious_tstSplit.txt"
+train_filename = "/Wiki10/wiki10_train.txt"
+test_filename = "/Wiki10/wiki10_test.txt"
+#tr_split_file = "/Mediamill/mediamill_trSplit.txt"
+#te_split_file = "/Mediamill/mediamill_tstSplit.txt"
+# numofcore
+num_core=8
 
 path = os.path.dirname(train_filename)
 model_path = model_dir + path
@@ -56,11 +58,11 @@ Z_tr = np.apply_along_axis(lambda x: [0 if elem < 0 else 1 for elem in x], 0, Z_
 def train_bit(bit):
     print "Trianning model for the {}th bit\n... ... ... \n".format(bit)
     #clf = LogisticRegression(solver='sag')
-    clf = LinearSVC(dual=False)
+    clf = LinearSVC(dual=True)
     clf.fit(y=Z_tr[:, bit], X=X_tr)
     joblib.dump(clf, os.path.join(model_path , 'label{}.pkl'.format(bit)))
     print "{}th bit's model successfully stored in {}/label{}.pkl\n".format(bit, model_path, bit)
 
-Parallel(n_jobs=8)(delayed(train_bit)(i) for i in range(Z_tr.shape[1]))
+Parallel(n_jobs=num_core)(delayed(train_bit)(i) for i in range(Z_tr.shape[1]))
 
 print "all done! success!\n"
