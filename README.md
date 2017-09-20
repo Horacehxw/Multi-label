@@ -35,3 +35,34 @@ Assume there are m labels in total and each data point has no more than k labels
 2. Add **parity check**`    ` to the above vector using Error Correction Code
 2. Train binary classifier on each digit.
 
+## 5. Binary mapping + kNN
+data set $(x,y)^d$, where $y_i=\{1, 0\}^L$
+
+we want to map y into lower space by $$z = [M\cdot y]$$ where M is a multivariant i,i,d Gaussian matrix, and $[]$ is tkaing the sign.
+
+Then we train binary classifiers on each bit of $z \in \{0, 1\}^{\hat L}$
+
+For each test point, we predict its $\hat z$ and then use kNN to find the nearest k neighbors from $z=[My]$ which is all our lower degree space's mapping.
+
+## 6. Binary mapping + BIHT
+data set $(x,y)^d$, where $y_i=\{1, 0\}^L$
+
+we want to map y into lower space by $$z = [M\cdot y]$$ where M is a multivariant i,i,d Gaussian matrix, and $[]$ is tkaing the sign.
+
+Then we train binary classifiers on each bit of $z \in \{0, 1\}^{\hat L}$
+
+For each test point, we predict its $\hat z$ and then recover the $\hat y$ using BIHT algorithm:
+
+$$
+\begin{align}
+&y^0=0^L\\
+&\text{for t = 0, 1, 2 ...}\\
+&\quad a^{t+1}=y^t+\frac{\tau}{2}M^T(z-[My^t])\\
+&\quad y^{t+1}=\eta_k(a^{t+1})
+\end{align}
+$$
+
+Where $\eta_k()$ here is keeping the k greatest positive value inside a and leaves others to 0. This algorithm can converge to the recovered $\hat y$
+
+
+
