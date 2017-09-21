@@ -1,4 +1,9 @@
+'''
+author: Xiaowu He. 2017.9.19
+'''
+
 import numpy as np
+from numpy.random import normal # generate transforming matrix
 
 def precision_at_k(truth, vote, k):
     '''
@@ -12,3 +17,12 @@ def precision_at_k(truth, vote, k):
         topk = np.argpartition(vote[i], -k)[-k:] 
         success += np.sum(truth[i, topk])
     return success / ((float(len(truth)))*k)
+
+def map_2_z(Y, L_hat):
+    np.random.seed(0)
+    M = normal(size=(L_hat, Y.shape[1]))
+    Z = sign(M.dot(Y.T).T) # z = n*\hat L
+    return Z
+
+def sign(Z):
+    return np.apply_along_axis(lambda x: [0 if elem < 0 else 1 for elem in x], 0, Z) #sign
