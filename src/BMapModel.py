@@ -18,13 +18,13 @@ class BM_Predictor():
         Y_tr(optional): kNN recover index, training data
         model_path(optional): dir of classifiers
     '''
-    def __init__(self, L, L_hat, Y_tr=None, index=None, model_path=None):
+    def __init__(self, L, L_hat, Y_tr=None, index=None, model_path=None, Mat=None):
         self.Y_tr = Y_tr
         self.index = index
         self.clfs = []
         self.L_hat = L_hat
         self.L = L
-        self.Mat=None
+        self.Mat=Mat
         if model_path != None:
             self.load_clf(model_path)
                     
@@ -43,8 +43,8 @@ class BM_Predictor():
             z_bits.append(z_bit)
         return np.column_stack(z_bits)
     
-    def vote_y(self, Z_pred, k, weighted=True):
-        dist, ind = self.index.search(Z_pred.astype('float32'), k)
+    def vote_y(self, Z_pred, vote, weighted=True):
+        dist, ind = self.index.search(Z_pred.astype('float32'), vote)
         if weighted: # 1/dist^2 as weight
             Y_pred = np.array([np.sum([self.Y_tr[ind[i][j]]/float(dist[i][j]*dist[i][j]+0.01) for j in range(len(ind[i]))], axis=0) for i in range(len(ind))])
         else:
@@ -70,17 +70,18 @@ class BM_Predictor():
             np.random.seed(0)
             self.Mat = normal(size=(self.L_hat, self.L))
         y = np.zeros((self.L,Z_pred.shape[0]))
+        z_sign = np.apply_along_axis(lambda x: [-1 if elem <= 0 else 1 for elem in x], 0, Z_pred) # -1, 1 mapping
         #import pdb; pdb.set_trace()
         for _ in range(iterate):
             #time.tic()
-            a = y + 0.5*tau*self.Mat.T.dot(Z_pred.T-util.sign(self.Mat.dot(y)))
+            a = y + 0.5*tau*self.Mat.T.dot(z_sign.T-np.sign(self.Mat.dot(y)))
             #time.toc('multiply at {} iter'.format(_))
             y = threshold_k(a)
-        return y.T #(sample, num of label)
+        return y.T # (sample, num of label)
         
             
     
-    def predict_y(self, X, sparsity=1, k=1, recover='kNN', weighted=True):
+    def predict_y(self, X, sparsity=1, vote=1, recover='kNN', weighted=True):
         '''
         predict y based on test data, can choose 'kNN', 'BIHT' method to recover
         Don't use default value!!!
@@ -92,7 +93,7 @@ class BM_Predictor():
         '''
         Z_pred = self.predict_z(X)
         if recover == 'kNN':
-            y_pred = self.vote_y(Z_pred, k, weighted=weighted)
+            y_pred = self.vote_y(Z_pred, vote, weighted=weighted)
         elif recover == 'BIHT':
             y_pred = self.BIHT_y(Z_pred, sparsity)
         else:
