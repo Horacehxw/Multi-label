@@ -1,9 +1,9 @@
-import joblib
 from sklearn.externals import joblib
 import os
 import numpy as np
 from numpy.random import normal
 import util
+from joblib import Parallel, delayed # Multitread
 
 class BM_Predictor():
     '''
@@ -18,13 +18,14 @@ class BM_Predictor():
         Y_tr(optional): kNN recover index, training data
         model_path(optional): dir of classifiers
     '''
-    def __init__(self, L, L_hat, Y_tr=None, index=None, model_path=None, Mat=None):
+    def __init__(self, L, L_hat, Y_tr=None, index=None, model_path=None, Mat=None, num_core=-1):
         self.Y_tr = Y_tr
         self.index = index
         self.clfs = []
         self.L_hat = L_hat
         self.L = L
         self.Mat=Mat
+        self.num_core = num_core
         if model_path != None:
             self.load_clf(model_path)
                     
@@ -37,11 +38,11 @@ class BM_Predictor():
         '''
         predict the subspace L_hat dim z vector with the data
         '''
-        z_bits = []
+        Z_pred = []
         for clf in self.clfs:
-            z_bit = clf.predict(X)
-            z_bits.append(z_bit)
-        return np.column_stack(z_bits)
+            Z_pred.append(clf.predict(X))
+        return np.column_stack(Z_pred)
+        #return np.column_stack(Parallel(n_jobs=self.num_core)(delayed(util.predict_bit)(X, clf) for clf in self.clfs))
     
     def vote_y(self, Z_pred, vote, weighted=True):
         dist, ind = self.index.search(Z_pred.astype('float32'), vote)
