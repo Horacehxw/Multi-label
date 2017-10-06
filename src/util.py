@@ -33,4 +33,13 @@ def group_test(Y, L_hat, sparsity):
     Z = M.dot(Y.T).T
     return np.apply_along_axis(lambda x: [1 if elem > 0 else 0 for elem in x], 0, Z)
 
+def hamming(y_true, y_pred):
+    '''
+    return an np array: hamming distance of every sample between y_true and y_pred
+    '''
+    hamming = []
+    for i in range(y_pred.shape[0]):
+        hamming.append((y_pred[i]!=y_true[i]).sum())
+    return np.array(hamming) / float(y_true.shape[1])
+
 

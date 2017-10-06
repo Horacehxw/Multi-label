@@ -79,10 +79,18 @@ class BM_Predictor():
             #time.toc('multiply at {} iter'.format(_))
             y = threshold_k(a)
         return y.T # (sample, num of label)
+    
+    def predict_prob_z(self, X):
+        '''
+        Use random forest to predict the probability of 1 for each label
+        '''
+        classifier = self.clfs[0] #load the RandomForest classifier
+        z_pred_prob = classifier.predict_proba(X)
+        return np.ascontiguousarray(np.array([prob[:, 1] for prob in z_pred_prob]).T) # kNN must use c-continuous array
         
             
     
-    def predict_y(self, X, sparsity=1, vote=1, recover='kNN', weighted=True):
+    def predict_y(self, X, sparsity=1, vote=1, recover='kNN', classifier='OvsA', weighted=True, predict_prob=False):
         '''
         predict y based on test data, can choose 'kNN', 'BIHT' method to recover
         Don't use default value!!!
@@ -91,8 +99,20 @@ class BM_Predictor():
             sparsity: sparse estimate of labels, use in BIHT
             k: kNN's k nearest neighbor
             weighted: unweight or weight in kNN search, default is good here
+            classifier: the classifier to predict z, 'OvsA' or 'RandomForest'
+            preditc_prob: use predict_prob in random forest instead of directly predict the classification result.
         '''
-        Z_pred = self.predict_z(X)
+        
+        if classifier == 'RandomForest':
+            if predict_prob==True:
+                Z_pred = self.predict_prob_z(X)
+            else:
+                Z_pred = self.predict_z(X)
+        elif classifier == 'OvsA':
+            Z_pred = self.predict_z(X)   
+        else:
+            Z_pred = None
+        
         if recover == 'kNN':
             y_pred = self.vote_y(Z_pred, vote, weighted=weighted)
         elif recover == 'BIHT':
