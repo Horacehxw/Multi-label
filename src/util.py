@@ -5,7 +5,7 @@ author: Xiaowu He. 2017.9.19
 import numpy as np
 from numpy.random import normal # generate transforming matrix
 
-def precision_at_k(truth, vote, k):
+def precision_at_k(truth, vote, k=1):
     '''
     evaluate precision at k for a vote vector
     p@k = num of correct prediction in topk / k
