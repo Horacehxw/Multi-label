@@ -1,6 +1,7 @@
 from sklearn.preprocessing import MultiLabelBinarizer # convert y to {0,1}^L
 from sklearn.feature_extraction import DictVectorizer # extract feature vector to x
 import numpy as np
+from sklearn.preprocessing import StandardScaler # normalize features 
 
 class DataPoint():
     def __init__(self):
@@ -80,21 +81,28 @@ def read_file(filename):
 def data_transform(tr, te, num_label):
     '''
     return: X_tr, Y_tr, X_te, Y_te
+    X is sparse matrix for memory reserve.
     '''
     # transform train and test data into sparse matrix
     lb = MultiLabelBinarizer(classes=range(num_label))
-    Y_tr_raw = np.array([np.array(data_point.labels) for data_point in tr])
-    Y_te_raw = np.array([np.array(data_point.labels) for data_point in te])
-    lb.fit(Y_tr_raw)
-    Y_tr = lb.transform(Y_tr_raw)
-    Y_te = lb.transform(Y_te_raw)
+    Y_tr = np.array([np.array(data_point.labels) for data_point in tr])
+    Y_te = np.array([np.array(data_point.labels) for data_point in te])
+    lb.fit(Y_tr)
+    Y_tr = lb.transform(Y_tr)
+    Y_te = lb.transform(Y_te)
+    lb = None
 
-    fv = DictVectorizer(sparse=False)
-    X_tr_raw = [data_point.features for data_point in tr]
-    X_te_raw = [data_point.features for data_point in te]
-    fv.fit(X_tr_raw)
-    X_tr = fv.transform(X_tr_raw)
-    X_te = fv.transform(X_te_raw)
+    fv = DictVectorizer(sparse=True)
+    X_tr = [data_point.features for data_point in tr]
+    X_te = [data_point.features for data_point in te]
+    fv.fit(X_tr)
+    X_tr = fv.transform(X_tr)
+    X_te = fv.transform(X_te)
+    
+    scaler = StandardScaler(with_mean=False) # X is sparse matrix, maintain sparsity by not centering the data
+    scaler.fit(X_tr)
+    X_tr = scaler.transform(X_tr)
+    X_te = scaler.transform(X_te)
     return X_tr, Y_tr, X_te, Y_te
 
 def split_data(data, split_file, index=0):
