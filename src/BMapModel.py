@@ -5,6 +5,12 @@ from numpy.random import normal
 import util
 from joblib import Parallel, delayed # Multitread
 
+def _vote(Y_tr, indi, disti, weighted):
+    if weighted:
+        return np.sum([Y_tr[indij]/float(distij*distij+0.01) for indij, distij in zip(indi, disti)])
+    else:
+        return np.sum([Y_tr[indij] for indij in indi])
+
 class BM_Predictor():
     '''
     v1.0: update the BIHT prediction method
@@ -44,14 +50,12 @@ class BM_Predictor():
         return np.column_stack(Z_pred)
         #return np.column_stack(Parallel(n_jobs=self.num_core)(delayed(util.predict_bit)(X, clf) for clf in self.clfs))
     
+
+    
     def vote_y(self, Z_pred, vote, weighted=True):
         dist, ind = self.index.search(Z_pred.astype('float32'), vote)
-        if weighted: # 1/dist^2 as weight
-            Y_pred = np.array([np.sum([self.Y_tr[ind[i][j]]/float(dist[i][j]*dist[i][j]+0.01) for j in range(len(ind[i]))], axis=0) for i in range(len(ind))])
-        else:
-            #Y_pred = np.array([np.sum([self.Y_tr[j[i]] for i in range(len(j))], axis=0) for j in ind])
-            Y_pred = np.array([np.sum([self.Y_tr[ind[i][j]] for j in range(len(ind[i]))], axis=0) for i in range(len(ind))])
-        return Y_pred
+        return Parallel(n_jobs=self.num_core)\
+                (delayed(_vote)(self.Y_tr, indi, disti, True) for indi, disti in zip(ind, dist))
     
     def BIHT_y(self, Z_pred, sparsity, tau=0.5, iterate=50):
         '''

@@ -11,12 +11,13 @@ def precision_at_k(truth, vote, k=1):
     p@k = num of correct prediction in topk / k
     '''
     success = 0
-    for i in range(len(truth)):
+    for i in range(truth.shape[0]):
         # find the k-largest index using partition selet
         # topk are not sorted, np.argsort(vote[topk]) can do that but not needed here
-        topk = np.argpartition(vote[i], -k)[-k:] 
-        success += np.sum(truth[i, topk])
-    return success / ((float(len(truth)))*k)
+        topk = vote[i].data.argpartition(-k)[-k:]
+        topk = vote[i].indices[topk]
+        success += truth[i, topk].sum()
+    return success / ((float(truth.shape[0]))*k)
 
 def map_2_z(Y, L_hat):
     np.random.seed(0)
