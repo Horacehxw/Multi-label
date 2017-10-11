@@ -21,16 +21,16 @@ def precision_at_k(truth, vote, k=1):
 def map_2_z(Y, L_hat):
     np.random.seed(0)
     M = normal(size=(L_hat, Y.shape[1]))
-    Z = sign(M.dot(Y.T).T) # z = n*\hat L
+    Z = sign(Y.dot(M.T)) # z = n*\hat L
     return Z
 
-def sign(Z):
+def sign(Z): 
     return np.apply_along_axis(lambda x: [0 if elem < 0 else 1 for elem in x], 0, Z) #sign
 
 def group_test(Y, L_hat, sparsity):
     np.random.seed(0)
     M = np.random.binomial(1, p=1./(sparsity+1), size=(L_hat, Y.shape[1]))
-    Z = M.dot(Y.T).T
+    Z = Y.dot(M.T) # z = n*\hat L
     return np.apply_along_axis(lambda x: [1 if elem > 0 else 0 for elem in x], 0, Z)
 
 def hamming(y_true, y_pred):

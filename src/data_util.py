@@ -84,16 +84,16 @@ def data_transform(tr, te, num_label):
     X is sparse matrix for memory reserve.
     '''
     # transform train and test data into sparse matrix
-    lb = MultiLabelBinarizer(classes=range(num_label))
+    lb = MultiLabelBinarizer(classes=range(num_label), sparse_output=True)
     Y_tr = np.array([np.array(data_point.labels) for data_point in tr])
     Y_te = np.array([np.array(data_point.labels) for data_point in te])
     lb.fit(Y_tr)
-    Y_tr = lb.transform(Y_tr)
+    Y_tr = lb.transform(Y_tr) #scipy sparse matrix
     Y_te = lb.transform(Y_te)
     lb = None
 
     fv = DictVectorizer(sparse=True)
-    X_tr = [data_point.features for data_point in tr]
+    X_tr = [data_point.features for data_point in tr] #scipy sparse matrix
     X_te = [data_point.features for data_point in te]
     fv.fit(X_tr)
     X_tr = fv.transform(X_tr)
