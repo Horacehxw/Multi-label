@@ -14,8 +14,11 @@ def precision_at_k(truth, vote, k=1):
     for i in range(truth.shape[0]):
         # find the k-largest index using partition selet
         # topk are not sorted, np.argsort(vote[topk]) can do that but not needed here
-        topk = vote[i].data.argpartition(-k)[-k:]
-        topk = vote[i].indices[topk]
+        if vote[i].data.shape[0] < k:
+            topk = vote[i].indices # in case the number of non-zero elements too small
+        else:
+            topk = vote[i].data.argpartition(-k)[-k:] # k largest's index in data
+            topk = vote[i].indices[topk] # col index of data
         success += truth[i, topk].sum()
     return success / ((float(truth.shape[0]))*k)
 

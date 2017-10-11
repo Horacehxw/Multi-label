@@ -13,8 +13,9 @@ def _vote(Y_tr, indi, disti, weighted):
 
 class BM_Predictor():
     '''
-    v1.0: update the BIHT prediction method
     Binary Map multilabel prediction model
+    v1.0: update the BIHT prediction method
+    v2.0: switch to scipy.sparse matrices
     
     Attribute:
         Mat: M, which maps y into z space
@@ -54,8 +55,13 @@ class BM_Predictor():
     
     def vote_y(self, Z_pred, vote, weighted=True):
         dist, ind = self.index.search(Z_pred.astype('float32'), vote)
-        return Parallel(n_jobs=self.num_core)\
-                (delayed(_vote)(self.Y_tr, indi, disti, True) for indi, disti in zip(ind, dist))
+        if weighted:
+            return [np.sum([self.Y_tr[indij]/float(distij*distij+0.01) for indij, distij in zip(indi, disti)]) for indi, disti in zip(ind,dist)]
+        else:
+            return [np.sum([self.Y_tr[indij] for indij in indi]) for indi, disti in zip(ind,dist)]
+        # issue: seems no speed up here, may be the bottle neck is swap io?
+        #return Parallel(n_jobs=self.num_core)\
+        #        (delayed(_vote)(self.Y_tr, indi, disti, True) for indi, disti in zip(ind, dist))
     
     def BIHT_y(self, Z_pred, sparsity, tau=0.5, iterate=50):
         '''
