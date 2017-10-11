@@ -5,4 +5,5 @@ src/.ipynb_checkpoints/**
 .model*/**
 *.o
 model*/**
+model/**
 
