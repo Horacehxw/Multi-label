@@ -1,7 +1,8 @@
 '''
 author: Xiaowu He. 2017.9.19
 '''
-
+import scipy
+import os
 import numpy as np
 from numpy.random import normal # generate transforming matrix
 
@@ -9,6 +10,9 @@ def precision_at_k(truth, vote, k=1):
     '''
     evaluate precision at k for a vote vector
     p@k = num of correct prediction in topk / k
+    
+    truth: scipy sparse matrix: shape = [sample, label]
+    vote: kNN voted matrix, list of sample * scipy sparse matrix [1,label]
     '''
     success = 0
     for i in range(truth.shape[0]):
