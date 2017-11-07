@@ -6,7 +6,7 @@ import os
 import numpy as np
 from numpy.random import normal # generate transforming matrix
 
-def precision_at_k(truth, vote, k=1):
+def precision_at_k(truth, vote, k=1, sparse=True):
     '''
     evaluate precision at k for a vote vector
     p@k = num of correct prediction in topk / k
@@ -50,4 +50,17 @@ def hamming(y_true, y_pred):
         hamming.append((y_pred[i]!=y_true[i]).sum())
     return np.array(hamming) / float(y_true.shape[1])
 
-
+def num_to_bin(x, length=None):
+    '''
+    convert a single label to corresponding binary vector
+    '''
+    import math
+    if length == None:
+        length=int(math.log(x)/math.log(2)) + 1
+    bits = [0]*length
+    i = 0
+    while x:
+        bits[i] = x%2
+        x >>= 1
+        i+=1
+    return np.array(bits)
