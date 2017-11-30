@@ -6,6 +6,7 @@ import os
 import numpy as np
 from numpy.random import normal # generate transforming matrix
 
+
 def precision_at_k(truth, vote, k=1, sparse=True):
     '''
     evaluate precision at k for a vote vector
@@ -63,4 +64,40 @@ def num_to_bin(x, length=None):
         bits[i] = x%2
         x >>= 1
         i+=1
-    return np.array(bits)
+    return bits
+
+
+class Predictor(object):
+    '''
+    This is the regular predictor
+    Predict directly from the model using the classifier
+    
+    Attribute:
+        clf: randomforest classifier clf.predcit(X)==>Z_pred
+        index: nn search indexer
+        Y_tr: the training data of Y in order to help kNN search
+        
+    Method:
+        predict_z: clf.predict(X)
+        predict: use predict_z and kNN to take a weighted version of Y
+    '''
+    def __init__(self, classifier, indexer, Y_tr):
+        self.clf = classifier
+        self.index=indexer
+        self.Y_tr=Y_tr #useful when recover Y from kNN search
+        
+    def predict_z(self, X):
+        return self.clf.predict(X)
+    
+    def predict(self, X, voter=30):
+        '''
+        voter=30: the number of NN we want to find
+        
+        return:
+            list of sample * scipy sparse matrix [1,label]
+        '''
+        Z_pred = self.predict_z(X)
+        dist, ind = self.index.search(Z_pred.astype('float32'), voter)
+        return [np.sum([self.Y_tr[indij]/float(distij*distij+0.01)\
+                        for indij, distij in zip(indi, disti)])\
+                        for indi, disti in zip(ind,dist)]

@@ -100,7 +100,7 @@ class BM_Predictor():
         
             
     
-    def predict_y(self, X, sparsity=1, vote=1, recover='kNN', classifier='OvsA', weighted=True, predict_prob=False):
+    def predict_y(self, X, sparsity=1, vote=30, recover='kNN', classifier='OvsA', weighted=True, predict_prob=False):
         '''
         predict y based on test data, can choose 'kNN', 'BIHT' method to recover
         Don't use default value!!!
