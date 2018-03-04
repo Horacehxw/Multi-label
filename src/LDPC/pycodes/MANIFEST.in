@@ -1,3 +1,0 @@
-
-recursive-include c_src *.h *.c
-recursive-include doc Makefile *.texi
