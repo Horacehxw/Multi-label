@@ -60,7 +60,7 @@ class BM_Predictor():
         else:
             return [np.sum([self.Y_tr[indij] for indij in indi]) for indi, disti in zip(ind,dist)]
         # issue: seems no speed up here, may be the bottle neck is swap io?
-        #return Parallel(n_jobs=self.num_core)\
+        # return Parallel(n_jobs=self.num_core)\
         #        (delayed(_vote)(self.Y_tr, indi, disti, True) for indi, disti in zip(ind, dist))
     
     def BIHT_y(self, Z_pred, sparsity, tau=0.5, iterate=50):
