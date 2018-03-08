@@ -10,6 +10,10 @@ for ii=1:iter
     y_tildes(ii,:,:) = temp.x;
 end
 
+[N_, L_bar] = size(y_test);
+temp = bchenc(gf(y_test), L_tilde, L_bar);
+y_test_tilde = temp.x;
 
-save("../.temp/train/y_tilde.mat", "y_tildes");
+
+save("../.temp/train/y_tilde.mat", "y_tildes", "y_test_tilde");
 

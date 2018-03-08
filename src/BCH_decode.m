@@ -7,7 +7,7 @@ L_bar = double(L_bar);
 y_bar_hats = zeros([iter, N, L_bar], 'single');
 for ii = 1:iter
     y_tilde_hat_ii = reshape(y_tilde_hats(ii, :, :), [N, L_tilde]);
-    temp = bchdec(gf(y_tilde_hat_ii), L_tilde, L_bar);
+    [temp, err] = bchdec(gf(y_tilde_hat_ii), L_tilde, L_bar);
     y_bar_hats(ii, :, :) = temp.x;
 end
 
