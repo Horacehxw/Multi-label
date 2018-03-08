@@ -110,3 +110,36 @@ class Predictor(object):
         return [np.sum([self.Y_tr[indij]/float(distij*distij+0.01)\
                         for indij, distij in zip(indi, disti)])\
                         for indi, disti in zip(ind,dist)]
+    
+from sklearn.linear_model import LogisticRegression
+from joblib import Parallel, delayed
+def fit_bit(method, X, y):
+    return method().fit(X, y)
+
+def predict_bit(clf, X):
+    return clf.predict(X)
+
+
+class OvsA():
+    '''
+    use OvsA technic to predict one bit in y by a base classifier
+    '''
+    def __init__(self, method=LogisticRegression, n_jobs=1):
+        '''
+        method: 
+            the function to generate the base classifiers.
+        '''
+        self.method = method
+        self.n_jobs = n_jobs
+        
+    def predict(self, X):
+#         bits = Parallel(n_jobs=self.n_jobs)(delayed(predict_bit)(clf, X)
+#                                            for clf in self.clfs)
+        bits = [clf.predict(X) for clf in self.clfs]
+        return np.stack(bits, axis=1)
+    
+    def fit(self, X, y):
+#         self.clfs = Parallel(n_jobs=self.n_jobs)(delayed(fit_bit)(self.method, X, y[:,i]) 
+#                                      for i in range(y.shape[1]))
+        self.clfs = [self.method().fit(X, y[:, i]) for i in range(y.shape[1])]
+        
