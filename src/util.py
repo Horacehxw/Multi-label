@@ -124,7 +124,7 @@ class OvsA():
     '''
     use OvsA technic to predict one bit in y by a base classifier
     '''
-    def __init__(self, method=LogisticRegression, n_jobs=1):
+    def __init__(self, method=LogisticRegression, n_jobs=-1):
         '''
         method: 
             the function to generate the base classifiers.
@@ -133,13 +133,41 @@ class OvsA():
         self.n_jobs = n_jobs
         
     def predict(self, X):
-#         bits = Parallel(n_jobs=self.n_jobs)(delayed(predict_bit)(clf, X)
-#                                            for clf in self.clfs)
-        bits = [clf.predict(X) for clf in self.clfs]
+        bits = Parallel(n_jobs=self.n_jobs)(delayed(predict_bit)(clf, X)
+                                           for clf in self.clfs)
+#         bits = [clf.predict(X) for clf in self.clfs]
         return np.stack(bits, axis=1)
     
     def fit(self, X, y):
-#         self.clfs = Parallel(n_jobs=self.n_jobs)(delayed(fit_bit)(self.method, X, y[:,i]) 
-#                                      for i in range(y.shape[1]))
-        self.clfs = [self.method().fit(X, y[:, i]) for i in range(y.shape[1])]
+        self.clfs = Parallel(n_jobs=self.n_jobs)(delayed(fit_bit)(self.method, X, y[:,i]) 
+                                     for i in range(y.shape[1]))
+#         self.clfs = [self.method().fit(X, y[:, i]) for i in range(y.shape[1])]
+
+
+class CombinedClf():
+    '''
+    use two different multilabel classifier classifier for
+        X -> y[:, :x] and X -> y[:, x:]
+    '''
+    def __init__(self, clf1, clf2, seperate):
+        '''
+        input:
+            method1,2: 
+                method that return a new classifier needed
+            sperate:
+                the part that seperates which classifier to use
+            n_jobs:
+                number of treads to use
+        '''
+        self.clf1 = clf1
+        self.clf2 = clf2
+        self.seperate = seperate
         
+    def predict(self, X):
+        y1 = self.clf1.predict(X)
+        y2 = self.clf2.predict(X)
+        return np.append(y1, y2, axis=1)
+    
+    def fit(self, X, y):
+        self.clf1.fit(X, y[:, :self.seperate])
+        self.clf2.fit(X, y[:, self.seperate:])
